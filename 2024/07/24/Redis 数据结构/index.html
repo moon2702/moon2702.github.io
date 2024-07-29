@@ -1,0 +1,862 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Redis 数据结构 | MOON</title><meta name="author" content="moon2702"><meta name="copyright" content="moon2702"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="本篇对Redis进行了认识和学习，解释了什么是Redis，分析了使用场景，并学习了Redis中五种数据结构的实现和使用场景。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis 数据结构">
+<meta property="og:url" content="http://moon2702.github.io/2024/07/24/Redis%20%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/index.html">
+<meta property="og:site_name" content="MOON">
+<meta property="og:description" content="本篇对Redis进行了认识和学习，解释了什么是Redis，分析了使用场景，并学习了Redis中五种数据结构的实现和使用场景。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2024/07/21/l7A41mHsp9PDS6W.jpg">
+<meta property="article:published_time" content="2024-07-24T05:38:00.000Z">
+<meta property="article:modified_time" content="2024-07-28T14:04:40.733Z">
+<meta property="article:author" content="moon2702">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.loli.net/2024/07/21/l7A41mHsp9PDS6W.jpg"><link rel="shortcut icon" href="/img/favicon-32x32-next.png"><link rel="canonical" href="http://moon2702.github.io/2024/07/24/Redis%20%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":200},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Redis 数据结构',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-07-28 22:04:40'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+document.addEventListener('pjax:send', () => {
+  Pace.restart()
+})
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2024/07/21/l7A41mHsp9PDS6W.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">4</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">4</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://s2.loli.net/2024/07/25/mkzJEb7GqutfaF3.png')"><nav id="nav"><span id="blog-info"><a href="/" title="MOON"><span class="site-name">MOON</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Redis 数据结构</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2024-07-24T05:38:00.000Z" title="发表于 2024-07-24 13:38:00">2024-07-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%BB%8F%E5%8E%86/">学习经历</a></span></div><div class="meta-secondline"></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="什么是Redis"><a href="#什么是Redis" class="headerlink" title="什么是Redis"></a>什么是Redis</h1><p>Redis是一个<strong>开源</strong>项目，是使用<strong>C语言</strong>编写，<strong>基于内存</strong>的一个<strong>高性能</strong> <strong>键值对</strong>存储系统。通常被用于<strong>缓存</strong>、<strong>消息队列</strong>、<strong>事件的发布订阅</strong>和<strong>分布式锁</strong> 。支持多种数据类型，基本数据类型有5种：String、List、Set、Zset、Hash。</p>
+<h2 id="Redis特点"><a href="#Redis特点" class="headerlink" title="Redis特点"></a>Redis特点</h2><p>Redis还支持多种机制，比如事务、持久化、集群方式(主从复制、哨兵模式和切片集群模式)、发布订阅、内存淘汰机制、过期删除机制等等。</p>
+<ul>
+<li><strong>高性能</strong>：Redis 存储<strong>基于内存</strong>，这意味着Redis 的读写速度非常快，Redis通常采用<strong>单线程</strong> 和<strong>异步IO</strong> 来实现读写操作，避免了多线程的竞争和阻塞，做到了高性能的读写。每秒11万次读操作，8万次的写操作。</li>
+<li><strong>多种数据类型</strong>：Redis 除了支持基本的数据类型之外，还支持Bitmaps(位图)、HyperLogLog(基数统计)、GEO(地理信息)、Stream(流)等，并且Redis 对数据的操作都是原子性的，Redis 执行命令使用单线程，不存在并发竞争的问题。Redis 的数据类型指的是 value 的数据类型，key 部分永远都是字符串类型。</li>
+<li><strong>持久化</strong>：Redis 提供两种持久化方式，即<strong>RDB(快照)</strong> 和<strong>AOF(日志追加)</strong> ，RDB 将内存数据以二进程方式写入磁盘，AOF 通过追加方式来记录Redis 的操作命令来实现持久化。</li>
+<li><strong>发布订阅</strong>：Redis 支持发布订阅模式，可以被用于消息代理。发布者将消息发送到指定频道，订阅者通过接收和处理这些消息。这种模式在实时通信、事件驱动系统和消息队列等场景十分有用。</li>
+<li><strong>分布式</strong>：Redis 通过<strong>主从复制</strong> 和<strong>分片</strong> 来实现数据的分布式存储和高可用性。主从复制将数据复制在多个从节点上，可以实现读写分离和数据备份；分片指的是将数据分布在多个Redis 节点上，实现横向扩展和负载均衡。</li>
+<li><strong>支持事务</strong>：Redis 支持事务，可以将多个操作组合成一个原子性的操作序列，保证这些操作全部成功或者全部失败。</li>
+</ul>
+<h1 id="Redis-数据结构"><a href="#Redis-数据结构" class="headerlink" title="Redis 数据结构"></a>Redis 数据结构</h1><p>Redis 有五种基本的数据类型，String、List、Set、Zset、Hash。本篇文章仅仅介绍这五种基本数据类型。</p>
+<p>在接触Redis 的数据结构之前，需要先了解redisObject 的概念。</p>
+<h2 id="redisObject"><a href="#redisObject" class="headerlink" title="redisObject"></a>redisObject</h2><p>在Redis 中，无论是什么数据类型，都是通过redisObject 对象来进行存储的，redisObject 对象的定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">redisObject</span> &#123;</span></span><br><span class="line">    <span class="type">unsigned</span> type:<span class="number">4</span>;</span><br><span class="line">    <span class="type">unsigned</span> encoding:<span class="number">4</span>;</span><br><span class="line">    <span class="type">unsigned</span> lru:REDIS_LRU_BITS;</span><br><span class="line">    <span class="type">int</span> refcount;</span><br><span class="line">    <span class="type">void</span>* ptr;</span><br><span class="line">&#125; robj;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="type"><a href="#type" class="headerlink" title="type"></a>type</h3><p>type 字段表示对象的类型，占用4个bit；包含REDIS_STRING（字符串）、REDIS_LIST（列表）、REDIS_HASH（哈希）、REDIS_SET（集合）、REDIS_ZSET（有序集合）。</p>
+<p>我们可以执行type 命令来获取对象的类型 <code>type &#39;键名&#39;</code>。</p>
+<h3 id="encoding"><a href="#encoding" class="headerlink" title="encoding"></a>encoding</h3><p>encoding 字段表示对象内部编码，占用4个bit；例如对于字符串，包含int、embstr、raw 三种编码。</p>
+<p>可以通过执行命令来获取对象的编码 <code>object encoding &#39;键名&#39;</code>。</p>
+<h3 id="lru"><a href="#lru" class="headerlink" title="lru"></a>lru</h3><p>lru 字段记录对象最后一次被命令程序访问的时间，占用大小根据版本有所不同，例如4.0版本占用24bit。</p>
+<p>通过对比lru时间和当前时间，可以计算出对象的空转时间（单位为秒）；可以通过object idletime来显示空转时间，该命令不会改变对象的lru值 <code>object idletime &#39;键名&#39;</code></p>
+<p>lru 字段还与内存回收机制相关，如果Redis 打开了maxmemory 选项，并且内存回收算法选择的是volatile-lru或者allkeys-lru，那么当Redis内存占用超过maxmemory指定的值时，Redis 会优先选择空转时间最长的对象进行释放。</p>
+<h3 id="refcount"><a href="#refcount" class="headerlink" title="refcount"></a>refcount</h3><p>refcount 字段记录对象被引用的次数，占用4个字节的空间；用于对象的引用计数和内存回收。</p>
+<p>当创建新对象时，refcount 初始化为1；当有新程序使用该对象时，refcount+1；当对象被一个程序释放时，refcount-1；当refcount 变为0时，系统释放该对象。</p>
+<p>Redis 中被多次使用的对象被称为共享对象，共享对象目前只支持整数值的字符串对象。Redis 为了节省内存，当出现一些重复对象值时，新的程序不会创建新的对象，而是使用系统中已经存在的对象。这个被重复使用的对象就叫共享对象。</p>
+<p>共享对象的引用次数可以通过命令来查看 <code>object refcount &#39;键名&#39;</code>，通过命令，证明了只有 0~9999 的整数值才能使用共享对象。</p>
+<h3 id="ptr"><a href="#ptr" class="headerlink" title="ptr"></a>ptr</h3><p>ptr 字段是一个指针变量，存放具体数据的地址，占用空间和系统有关。</p>
+<h2 id="五种数据结构的具体实现"><a href="#五种数据结构的具体实现" class="headerlink" title="五种数据结构的具体实现"></a>五种数据结构的具体实现</h2><p>Redis 不同的数据类型有很多底层结构实现，下面是两个版本的Redis 数据类型和底层结构的关系图。<br><img src="https://s2.loli.net/2024/07/26/p5KOcntPwWA1eui.png" alt="image.png"></p>
+<h3 id="String"><a href="#String" class="headerlink" title="String"></a>String</h3><p>String 是Redis 中最基本的数据类型，可以存储任意类型的数据，例如文本、数字、图片或者序列化的对象。一个String 类型的键最多存储 512MB 大小的数据。</p>
+<p>String 底层实现基于SDS(simple dynamic string) ，SDS 指的是简单动态字符串，是Redis 自己实现的一种字符串结构。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sdshdr</span> &#123;</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> len; <span class="comment">// 当前字符串长度</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> <span class="built_in">free</span>; <span class="comment">// 剩余可用长度</span></span><br><span class="line">    <span class="type">char</span> buf[]; <span class="comment">// 实际存储数据</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>SDS 相较于C语言 的字符串：</p>
+<ul>
+<li>SDS 可以保存文本数据，还能保存二进制数据：因为SDS 使用len 而不是空字符来判断字符串是否结束，并且SDS 中所有API 都会以处理二进制的方式来处理SDS 存放在buf[] 数组中的数据，所以SDS 不仅能存放文本数据，还能存放图片、视频、音频、压缩文件等二进制数据。</li>
+<li>SDS 获取字符串长度的时间复杂的是O(1)：C语言 中字符串并不会记录自身长度，需要通过遍历来获取自身长度，时间复杂度为O(n)；而SDS使用len 来记录字符串长度，复杂度为O(1)。</li>
+<li>SDS API 是安全的，拼接字符串不会造成缓冲区溢出：SDS在拼接之前，先检查SDS 剩余空间是否满足需求，如果空间不够拼接，会自动扩容，不会导致缓冲区溢出。</li>
+</ul>
+<blockquote>
+<p>实际上，SDS 为了兼容C语言的字符串类型，仍然会在字符串结尾添加 “\0”</p>
+</blockquote>
+<h4 id="内部编码"><a href="#内部编码" class="headerlink" title="内部编码"></a>内部编码</h4><p>SDS有三种编码类型：</p>
+<ul>
+<li>int：存储整数类型</li>
+<li>embstr：占用64Bytes的空间，存储44Bytes的数据</li>
+<li>raw：存储大于44Bytes的数据</li>
+</ul>
+<p><img src="https://s2.loli.net/2024/07/26/mAjbaTnfsi9Jh42.png" alt="Clip_2024-07-26_15-50-40.png"></p>
+<p>embstr 结构存储小于等于44个Byte的字符串，例如存储44Byte大小的信息，需要开辟64个Byte大小的空间用于创建embstr，其他19个Byte大小的空间被用来存储redisObject 和SDS 的其它信息。</p>
+<p>raw 结构存储大于44个Byte的字符串。</p>
+<blockquote>
+<p>实际上，embstr存储数据的长度在不同Redis版本中，是不一样的：</p>
+<ul>
+<li>2.x：32字节</li>
+<li>3.x~4.x：39字节</li>
+<li>5.x：44字节</li>
+</ul>
+</blockquote>
+<p><img src="https://s2.loli.net/2024/07/26/jQlYknrHf2Vv1iW.png" alt="Clip_2024-07-26_18-43-50.png"><br><img src="https://s2.loli.net/2024/07/26/xSQOt9A37Ewpyed.png" alt="Clip_2024-07-26_18-43-40.png"></p>
+<p>embstr 和raw 都使用SDS 来保存数据，它们不同之处在于：</p>
+<ul>
+<li>创建过程：embstr 申请一块连续的内存来保存redisObject 和SDS，raw 会申请两块连续内存分别保存redisObject 和SDS。</li>
+<li>可修改性：embstr 是不可以修改的，如果字符串长度增加，需要重新分配内存时，整个redisObject 和SDS 都需要重新分配空间，所以embstr 对象实际上是只读的，需要修改embstr 对象时，会直接将对象的编码修改为raw，然后执行修改操作。</li>
+</ul>
+<h4 id="编码转换"><a href="#编码转换" class="headerlink" title="编码转换"></a>编码转换</h4><ul>
+<li>当int 类型数据不再是整数，或者大小超过了long 的范围时，自动转换为raw 编码；</li>
+<li>当embstr 对象进行修改时，无论是否超过长度限制，都会先转换为raw 编码，然后再进行修改。</li>
+</ul>
+<p><img src="https://s2.loli.net/2024/07/26/t1pVXgB3SlNJhsj.png" alt="Clip_2024-07-26_19-24-10.png"></p>
+<h3 id="List"><a href="#List" class="headerlink" title="List"></a>List</h3><p>List 用来表示一个有序的字符串列表，按照插入顺序排序，支持在两端插入或者删除元素，一个List类型的键最多可以存储 $2^{32} - 1$ 个元素。</p>
+<p>List 的底层数据结构根据Redis 的版本不同有所变化：</p>
+<ul>
+<li>Redis 3.2之前，List 使用 <code>linkedlist(双向链表)</code> 和 <code>ziplist(压缩列表)</code>；</li>
+<li>Redis 3.2~7.0之间，List 使用 <code>quicklist</code>，实际上相当于 <code>linkedlist(双向链表)</code> 和 <code>ziplist(压缩列表)</code>的结合；</li>
+<li>Redis 7.0之后，List 使用 <code>quicklist</code>，相当于 <code>linkedlist(双向链表)</code> 和 <code>listpack(紧凑列表)</code>的结合。</li>
+</ul>
+<p>内部实现：底层数据结构的选择？</p>
+<ul>
+<li>如果List 中的元素个数小于512个，存储的值都小于64字节时，Redis 使用 <code>ziplist</code> 作为List 的底层数据结构；</li>
+<li>如果List 中元素不符合上面的条件，Redis 将使用 <code>linkedlist</code> 来作为List 的底层数据结构；</li>
+<li>在Redis 3.2之后，直接使用 <code>quicklist</code> 来作为List 的底层数据结构。</li>
+</ul>
+<blockquote>
+<p>底层数据结构转换的阈值可以通过修改配置来进行设置：</p>
+<ul>
+<li><code>list-max-ziplist-entries</code>： 用于配置元素个数；</li>
+<li><code>list-max-ziplist-value</code>： 用于配置元素值的大小。</li>
+</ul>
+</blockquote>
+<h4 id="底层实现"><a href="#底层实现" class="headerlink" title="底层实现"></a>底层实现</h4><h5 id="ziplist"><a href="#ziplist" class="headerlink" title="ziplist"></a>ziplist</h5><p>压缩列表是一系列的连续内存块组成的顺序结构，整体结构如下：<br><img src="https://s2.loli.net/2024/07/26/DdflToOUpu3gKZn.png" alt="Clip_2024-07-26_20-43-33.png"></p>
+<table>
+<thead>
+<tr>
+<th>属性名</th>
+<th>大小</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>zlbytes</td>
+<td>4 Byte</td>
+<td>记录整个压缩列表占用的字节数</td>
+</tr>
+<tr>
+<td>zltail</td>
+<td>4 Byte</td>
+<td>记录压缩列表起始地址到尾节点的偏移量</td>
+</tr>
+<tr>
+<td>zllen</td>
+<td>2 Byte</td>
+<td>记录压缩列表的节点数量</td>
+</tr>
+<tr>
+<td>entry-x</td>
+<td>不定</td>
+<td>压缩列表中的各个节点</td>
+</tr>
+<tr>
+<td>zlend</td>
+<td>1 Byte</td>
+<td>标记压缩列表的尾端，固定为0xFF</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>属性名</th>
+<th>大小</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>previous_entry_length</td>
+<td>1 Byte &#x2F; 5 Byte</td>
+<td>记录前一个节点占用的字节数 <br>为了让ziplist 能够从后向前遍历</td>
+</tr>
+<tr>
+<td>encoding</td>
+<td>1 Byte &#x2F; 2 Byte &#x2F; 5 Byte</td>
+<td>记录节点数据类型和长度</td>
+</tr>
+<tr>
+<td>content</td>
+<td>不定</td>
+<td>记录数据本身</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><code>ziplist</code> 变长编码的含义</p>
+<ul>
+<li>previous_entry_length：如果长度为1，表示上一个节点占用空间小于254字节；如果长度为5，则表示长度超过254字节。<blockquote>
+<p>为什么不能表示255呢？</p>
+<ul>
+<li>这是由于zlend 的值就是0xFF，如果长度能表示255，将会产生歧义。</li>
+</ul>
+</blockquote>
+</li>
+<li>encoding：如果最高位为11，表示数据类型为整数；如果最高位不是11，表示数据类型是字符串<ul>
+<li>00：表示encoding占用1字节，可以表示小于$2^{6} - 1$字节的字符串</li>
+<li>01：表示encoding占用2字节，可以表示小于$2^{14} - 1$字节的数据</li>
+<li>10：表示encoding占用5字节，可以表示小于$2^{32} - 1$字节的数据</li>
+<li>11000000：整数均占用1字节，表示数据部分存储2字节的int16_t类型整数</li>
+<li>11010000：表示数据部分存储4字节的int32_t类型整数</li>
+<li>11100000：表示数据部分存储8字节的int64_t类型整数</li>
+<li>11110000：表示数据部分存储3字节长度的整数</li>
+<li>11111110：表示数据部分存储1字节长度的整数</li>
+<li>1111xxxx：encoding 和content 部分合二为一，xxxx表示数据部分，可以表示0001~1101之间13个数值，分别用来表示0~12（0000、1110、1111均和其他编码冲突）</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<h5 id="linkedlist"><a href="#linkedlist" class="headerlink" title="linkedlist"></a>linkedlist</h5><p>双向链表是一个可以进行双向遍历的链表结构，如下图所示：<br><img src="https://s2.loli.net/2024/07/27/7JHxEzf1wBXLC4V.png" alt="Clip_2024-07-27_14-32-11.png"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">list</span> &#123;</span></span><br><span class="line">    listNode* head;</span><br><span class="line">    listNode* tail;</span><br><span class="line">    <span class="type">void</span>* (*dup)(<span class="type">void</span>* ptr);</span><br><span class="line">    <span class="type">void</span> (*<span class="built_in">free</span>)(<span class="type">void</span>* ptr);</span><br><span class="line">    <span class="type">int</span> (*match)(<span class="type">void</span>* ptr, <span class="type">void</span>* key);</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> len;</span><br><span class="line">&#125; <span class="built_in">list</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">listNode</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">listNode</span>* <span class="title">prev</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">listNode</span>* <span class="title">next</span>;</span></span><br><span class="line">    <span class="type">void</span>* value;</span><br><span class="line">&#125; listNode;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>属性名</th>
+<th>类型</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>head</td>
+<td>listNode*</td>
+<td>指向链表的头节点</td>
+</tr>
+<tr>
+<td>tail</td>
+<td>listNode*</td>
+<td>指向链表的尾节点</td>
+</tr>
+<tr>
+<td>dup</td>
+<td>void*</td>
+<td>函数指针，用于节点拷贝</td>
+</tr>
+<tr>
+<td>free</td>
+<td>void</td>
+<td>函数指针，用于节点释放</td>
+</tr>
+<tr>
+<td>match</td>
+<td>int</td>
+<td>函数指针，用于对比两个节点是否相同</td>
+</tr>
+<tr>
+<td>len</td>
+<td>unsigned long</td>
+<td>表示链表的节点个数</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>属性名</th>
+<th>类型</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>prev</td>
+<td>listNode*</td>
+<td>记录前一个节点的地址</td>
+</tr>
+<tr>
+<td>next</td>
+<td>listNode*</td>
+<td>记录后一个节点的地址</td>
+</tr>
+<tr>
+<td>value</td>
+<td>void*</td>
+<td>节点中记录的数据</td>
+</tr>
+</tbody></table>
+<h5 id="quicklist"><a href="#quicklist" class="headerlink" title="quicklist"></a>quicklist</h5><p><code>quicklist</code> 也是一个双向链表，并且它的每个节点都是一个 <code>ziplist</code>，<code>ziplist </code>本身是一个能够维持数据先后顺序的列表，并且内存紧凑。<code>quicklist</code> 中的数据分布是这样的：例如，一个有3个节点的 <code>quicklist</code>，每个节点 <code>ziplist</code> 中包含4个数据项，那么这个 <code>quicklist</code> 对外体现出的结果就是包含了12个数据项目的链表。</p>
+<blockquote>
+<p>在Redis 7.0之后 <code>ziplist</code> 被替换为 <code>listpack</code>。</p>
+</blockquote>
+<p><code>quicklist</code> 这样设计有什么好处呢？</p>
+<ul>
+<li>双向链表便于在表的两边进行push 和pop 操作，但是双向链表的内存开销很大，每个节点除了保存数据之外，还需要保存两个指针；</li>
+<li>双向链表各个节点是单独的内存块，地址不连续，节点多容易产生内存碎片；</li>
+<li><code>ziplist</code> 是一块连续的内存，存储效率高，但是不利于修改，每次数据更新都会realloc，当 <code>ziplist</code> 特别长时，可能导致大批量的数据拷贝，降低性能。</li>
+</ul>
+<p><code>quicklist </code>的设计就是将两者的优缺点进行折中处理，那么既然需要将两者结合起来使用，<code>ziplist</code> 长度设置多少合适呢，Redis 提供一个选项，可以根据实际情况来进行配置 <code>list-max-ziplist-size</code>。这个参数可以取正值，也可以取负值。</p>
+<ul>
+<li>取正值时，按照数据项目个数来限制 <code>ziplist</code> 的长度，当配置为5时，表示 <code>ziplist</code> 中最多包含5个数据项。</li>
+<li>取负值时，按照字节数来限制每个 <code>ziplist</code> 的长度，并且只能取-1~-5这5个值：<ul>
+<li>-5：大小不能超过64KB；-4：不能超过32KB；-3：不能超过16KB；-2：不能超过8KB；-1：不能超过4KB。</li>
+</ul>
+</li>
+</ul>
+<p>当列表很长时，中间的数据被访问的频率比较低，List 还提供了一个选项，可以将中间的数据节点进行压缩，从而进一步节省内存空间，<code>list-compress-depth</code> 这个参数表示一个 <code>quicklist</code> 两端不被压缩的节点个数（双向链表的节点），特殊的，当该选项为 0 时，表示所有节点都不压缩，所以说，<code>quicklist </code>链表的头节点和尾节点都是不会被压缩的。</p>
+<p>对于节点的压缩方式，<code>quicklist</code> 使用一种无损压缩算法 <a target="_blank" rel="noopener" href="http://oldhome.schmorp.de/marc/liblzf.html">LZF</a>，对访问频率低的<code>ziplist</code> 进行压缩处理。</p>
+<p><img src="https://s2.loli.net/2024/07/27/FurSGEa6icoOJNf.png" alt="Clip_2024-07-27_19-03-44.png"></p>
+<p><code>quicklist</code> 相关的结构：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">quicklist</span> &#123;</span></span><br><span class="line">    quicklistNode *head;</span><br><span class="line">    quicklistNode *tail;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> count;        <span class="comment">/* total count of all entries in all ziplists */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> len;           <span class="comment">/* number of quicklistNodes */</span></span><br><span class="line">    <span class="type">int</span> fill : <span class="number">16</span>;              <span class="comment">/* fill factor for individual nodes */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> compress : <span class="number">16</span>; <span class="comment">/* depth of end nodes not to compress;0=off */</span></span><br><span class="line">&#125; quicklist;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">quicklistNode</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">quicklistNode</span> *<span class="title">prev</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">quicklistNode</span> *<span class="title">next</span>;</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> *zl;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> sz;             <span class="comment">/* ziplist size in bytes */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> count : <span class="number">16</span>;     <span class="comment">/* count of items in ziplist */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> encoding : <span class="number">2</span>;   <span class="comment">/* RAW==1 or LZF==2 */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> container : <span class="number">2</span>;  <span class="comment">/* NONE==1 or ZIPLIST==2 */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> recompress : <span class="number">1</span>; <span class="comment">/* was this node previous compressed? */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> attempted_compress : <span class="number">1</span>; <span class="comment">/* node can&#x27;t compress; too small */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> extra : <span class="number">10</span>; <span class="comment">/* more bits to steal for future usage */</span></span><br><span class="line">&#125; quicklistNode;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">quicklistLZF</span> &#123;</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> sz; <span class="comment">/* LZF size in bytes*/</span></span><br><span class="line">    <span class="type">char</span> compressed[];</span><br><span class="line">&#125; quicklistLZF;</span><br></pre></td></tr></table></figure>
+
+
+<table>
+<thead>
+<tr>
+<th>属性名</th>
+<th>类型</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>head</td>
+<td>quicklistNode*</td>
+<td>指向头节点</td>
+</tr>
+<tr>
+<td>tail</td>
+<td>quicklistNode*</td>
+<td>指向尾节点</td>
+</tr>
+<tr>
+<td>count</td>
+<td>unsigned long</td>
+<td>数据项目总数</td>
+</tr>
+<tr>
+<td>len</td>
+<td>unsigned long</td>
+<td>quicklist节点个数</td>
+</tr>
+<tr>
+<td>fill</td>
+<td>int (16 bit)</td>
+<td>ziplist大小</td>
+</tr>
+<tr>
+<td>compress</td>
+<td>unsigned int (16 bit)</td>
+<td>不被压缩的节点深度</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>属性名</th>
+<th>类型</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>prev</td>
+<td>quicklistNode*</td>
+<td>指向前一个节点</td>
+</tr>
+<tr>
+<td>next</td>
+<td>quicklistNode*</td>
+<td>指向下一个节点</td>
+</tr>
+<tr>
+<td>zl</td>
+<td>unsigned char*</td>
+<td>指向ziplist，如果被压缩，指向uuicklistLZF</td>
+</tr>
+<tr>
+<td>sz</td>
+<td>unsigned int</td>
+<td>zl 指向的ziplist 的总大小(不论有没有被压缩)</td>
+</tr>
+<tr>
+<td>count</td>
+<td>unsigned int (16 bit)</td>
+<td>ziplist 中包含的数据项个数</td>
+</tr>
+<tr>
+<td>encoding</td>
+<td>unsigned int (2 bit)</td>
+<td>表示ziplist 是否需要被压缩(1:不压缩&#x2F;2:LZF压缩)</td>
+</tr>
+<tr>
+<td>container</td>
+<td>unsigned int (2 bit)</td>
+<td>节点中存放数据的方式(直接存&#x2F;ziplist)</td>
+</tr>
+<tr>
+<td>recompress</td>
+<td>unsigned int (1 bit)</td>
+<td>暂时解压数据时置为1</td>
+</tr>
+<tr>
+<td>attempted_compress</td>
+<td>unsigned int (1 bit)</td>
+<td>自动化测试程序</td>
+</tr>
+<tr>
+<td>extra</td>
+<td>unsigned int (10 bit)</td>
+<td>扩展字段</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>属性名</th>
+<th>类型</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>sz</td>
+<td>unsigned int</td>
+<td>压缩后的大小</td>
+</tr>
+<tr>
+<td>compressed</td>
+<td>char*</td>
+<td><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Flexible_array_member">柔性数组</a>，存放压缩后的字节数组</td>
+</tr>
+</tbody></table>
+<h3 id="Hash"><a href="#Hash" class="headerlink" title="Hash"></a>Hash</h3><p>Hash 是一个键值对的集合，可以存储多个字段和值，一个Hash 类型的键最多可以存储 $2^{32} - 1$ 个元素。</p>
+<p>Hash 的底层实现有两种：</p>
+<ul>
+<li><code>ziplist</code>：压缩列表，在达到一定阈值时，会自动转换为 <code>hashtable</code> 结构；</li>
+<li><code>hashtable</code>：哈希表。</li>
+</ul>
+<p>内部实现：底层数据结构如何进行选择？</p>
+<ul>
+<li>如果Hash 中的元素个数小于512个，存储的值都小于64字节时，Redis 使用 <code>ziplist</code> 来作为Hash 的底层数据结构；</li>
+<li>如果Hash 中的元素不符合上面的条件，Redis 将使用 <code>hashtable</code> 来作为Hash 的底层数据结构。</li>
+</ul>
+<blockquote>
+<p>在Redis 7.0版本之后，<code>ziplist</code> 被弃置，使用 <code>listpack</code> 结构（紧凑列表）来代替。</p>
+<p>底层数据结构转换的阈值可以通过修改配置来进行设置：</p>
+<ul>
+<li><code>hash-max-ziplist-entries</code>： 用于配置元素个数；</li>
+<li><code>hash-max-ziplist-value</code>： 用于配置元素值的大小。</li>
+</ul>
+</blockquote>
+<h4 id="底层实现-1"><a href="#底层实现-1" class="headerlink" title="底层实现"></a>底层实现</h4><h5 id="listpack"><a href="#listpack" class="headerlink" title="listpack"></a>listpack</h5><p><code>listpack</code> 紧凑列表，相较于 <code>ziplist</code> 来说，内存布局、实现原理非常相似，但是 <code>listpack</code> 更加紧凑，实现更加简洁。<br><img src="https://s2.loli.net/2024/07/27/6znOihXlJKwxAPs.png" alt="Clip_2024-07-27_21-32-34.png"></p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>大小</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>tot-bytes</td>
+<td>4 Byte</td>
+<td>记录整个列表占用的字节数</td>
+</tr>
+<tr>
+<td>num-element</td>
+<td>2 Byte</td>
+<td>记录列表中总的节点个数</td>
+</tr>
+<tr>
+<td>element-x</td>
+<td>不定</td>
+<td>列表中具体的各个节点</td>
+</tr>
+<tr>
+<td>listpack-end</td>
+<td>1 Byte</td>
+<td>结束标识符，固定为0xFF</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>属性名</th>
+<th>大小</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>encoding</td>
+<td>1 Byte &#x2F; 2 Byte</td>
+<td>记录当前节点的编码类型</td>
+</tr>
+<tr>
+<td>data</td>
+<td>不定</td>
+<td>记录节点数据本身</td>
+</tr>
+<tr>
+<td>len</td>
+<td>1 Byte ~ 5 Byte</td>
+<td>记录编码类型和元素数据的长度</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>encoding：针对不同长度的整型和字符串定义了多种编码方式</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> LP_ENCODING_7BIT_UINT 0</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LP_ENCODING_13BIT_INT 0xC0</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LP_ENCODING_16BIT_INT 0xF1</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LP_ENCODING_24BIT_INT 0xF2</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LP_ENCODING_32BIT_INT 0xF3</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LP_ENCODING_64BIT_INT 0xF4</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LP_ENCODING_6BIT_STR 0x80</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LP_ENCODING_12BIT_STR 0xE0</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LP_ENCODING_32BIT_STR 0xF0</span></span><br></pre></td></tr></table></figure>
+
+<p>存储数据类型：</p>
+<ul>
+<li>UINT结尾：表示无符号整型</li>
+<li>INT结尾：表示有符号整型</li>
+<li>STR结尾：表示字符串类型</li>
+</ul>
+<p>存储数据长度：</p>
+<ul>
+<li>UINT 和INT 中BIT 前的数字表示数据本身所占的比特数</li>
+<li>STR 中BIT 前的数字表示字符串长度所占用的比特数</li>
+<li>并且如果BIT前的数字不是2的幂次方时，表示会占用encoding 编码中的剩余可用空间</li>
+</ul>
+<p>举例：</p>
+<ul>
+<li>LP_ENCODING_7BIT_UINT 0：表示encoding 编码为0000 0000，只会使用高地址第1位来表示标识编码 0，剩下7位来存储无符号整型数据；</li>
+<li>LP_ENCODING_6BIT_STR 0x80：表示encoding 编码为1000 0000，只会使用高地址的前2位来标识编码 0x80，剩下6位来存储字符串的长度信息。</li>
+</ul>
+</blockquote>
+<blockquote>
+<p>len：len 用来记录element(encoding+data) 的长度，它有如下的特点；</p>
+<ul>
+<li>len 只是记录encoding+data 的长度，并不包括len 自身的长度；</li>
+<li>len 的最高位用于标识len 的结束，而不包含长度信息；</li>
+<li>len 至少有1个字节，最长为5个字节<a target="_blank" rel="noopener" href="https://blog.csdn.net/happytree001/article/details/119685207#:~:text=%E5%AD%97%E7%AC%A6%E4%B8%B2-,2.2.2%20element%2Dtotal%2Dlen%E7%BC%96%E7%A0%81,-element%2Dtotal%2Dlen">len 结构图解</a></li>
+</ul>
+</blockquote>
+<h6 id="listpack的遍历"><a href="#listpack的遍历" class="headerlink" title="listpack的遍历"></a>listpack的遍历</h6><p>在ziplist 中，每个元素记录了上一个元素的大小，支持了从后向前遍历，但是却导致了连锁更新的问题。listpack解决了该问题，每个元素不在记录上一个元素的大小，而是改为记录自身的大小，这样每个元素相互独立，修改不会相互影响。</p>
+<p>正向遍历：</p>
+<ul>
+<li>首先跳过6字节的首部，指针指向第一个元素；</li>
+<li>然后根据元素的encoding 字段得到元素的长度和类型；</li>
+<li>访问当前元素或者跳过当前元素，直到访问到结束标识符，遍历结束。</li>
+</ul>
+<p>反向遍历：</p>
+<ul>
+<li>首先访问 <code>listpack</code> 的前面4个字节得到总长度，定位到末尾位置；</li>
+<li>然后指针左移访问最后一个元素的len 字段，得到当前元素的长度，定位到当前元素的encoding 字段；</li>
+<li>访问当前元素或者跳过当前元素（指针左移访问上一个元素的len 字段），以此类推进行反向遍历。</li>
+</ul>
+<blockquote>
+<p>连锁更新指的是在由于每个元素之间相互有联系，在修改列表中某个元素时，出现连锁反应，后面的元素都会发生修改。（记录元素长度的字段是变长编码，字段长度发生改变）</p>
+<blockquote>
+<p>连锁更新问题出现的原因：</p>
+<ul>
+<li>每个元素记录上一个元素的长度；</li>
+<li>在记录上一个元素长度时使用变长编码。</li>
+</ul>
+</blockquote>
+</blockquote>
+<h5 id="hashtable"><a href="#hashtable" class="headerlink" title="hashtable"></a>hashtable</h5><p><a target="_blank" rel="noopener" href="https://juejin.cn/post/7047665450632609805">Redis 底层数据结构 dict（hashtable）的实现机制</a><br><a target="_blank" rel="noopener" href="http://zhangtielei.com/posts/blog-redis-dict.html">Redis内部数据结构详解(1)——dict</a></p>
+<h3 id="Set"><a href="#Set" class="headerlink" title="Set"></a>Set</h3><p>Set 与List 类似，都可以用来存储多个字符串，但是Set 和List 又有所不同：Set 中的元素是无序的，不能通过索引来操作元素，Set 中的元素不能重复；一个Set 类型的键可以存储 $2^{32} - 1$ 个元素，除了支持增删改查，Redis 还支持多个Set 取交集、并集和差集。</p>
+<p>Set 的底层实现有两种：</p>
+<ul>
+<li><code>intset</code>：整数集合，实际上是一种紧凑的数组结构，只保存 <code>int</code> 类型的数据，将所有的元素按照从小到大的顺序存储在一块连续的内存中，会根据传入数据的大小，将数据编码分为 <code>int16_t</code>、<code>int32_t</code>、<code>int64_t</code>。</li>
+<li><code>hashtable</code>：哈希表。</li>
+</ul>
+<p>内部实现：底层数据结构如何进行选择？</p>
+<ul>
+<li>如果Set 中的元素全部为整数，并且保存的元素数量小于512个时，使用 <code>intset</code> 作为Set 的底层数据结构；</li>
+<li>如果Set 中元素不满足上面条件，使用 <code>hashtable</code> 作为Set 的底层数据结构。</li>
+</ul>
+<blockquote>
+<p>在Redis 7.2之后，Set的底层数据结构添加了 <code>listpack</code>。在没有使用 <code>listpack</code> 之前，字符串类型的数据会直接使用 <code>hashtable</code> 结构，而在加入 <code>listpack</code> 之后，字符串类型的数据会先使用 <code>listpack</code> 来进行存储，在达到一定阈值时，转换为 <code>hashtable</code>。<br>这是因为 <code>hashtable</code> 的空间开销和碰撞概率都很高，使用 <code>listpack</code> 提高了内存利用率和操作效率。</p>
+<p><code>set-max-intset-entries</code>：用于配置 <code>intset</code> 的最大元素个数；<br><code>set-max-listpack-entries</code>：用于配置 <code>listpack</code> 的最大元素个数；<br><code>set-max-listpack-value</code>：用于配置 <code>listpack</code> 的单个元素大小。</p>
+</blockquote>
+<h4 id="intset"><a href="#intset" class="headerlink" title="intset"></a>intset</h4><p><code>intset</code> 是一个有序的整数集合，其中只能存储整数，可以存储三种类型的整数，分别为2、4、8字节。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> INTSET_ENC_INT16 (sizeof(int16_t))</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> INTSET_ENC_INT32 (sizeof(int32_t))</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> INTSET_ENC_INT64 (sizeof(int64_t))</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">intset</span> &#123;</span></span><br><span class="line">    <span class="type">uint32_t</span> encoding;</span><br><span class="line">    <span class="type">uint32_t</span> length;</span><br><span class="line">    <span class="type">int8_t</span> contents[];</span><br><span class="line">&#125; intset;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>大小</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>encoding</td>
+<td>4 Byte</td>
+<td>数据编码，用于表示每个元素占用的大小</td>
+</tr>
+<tr>
+<td>length</td>
+<td>4 Byte</td>
+<td>元素个数，记录intset中的元素数量</td>
+</tr>
+<tr>
+<td>contents</td>
+<td>不定</td>
+<td>柔性数组，用于存储实际的数据</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>encoding：有三种取值</p>
+<ul>
+<li><code>INTSET_ENC_INT16</code>：表示每个元素占用2字节</li>
+<li><code>INTSET_ENC_INT32</code>：表示每个元素占用4字节</li>
+<li><code>INTSET_ENC_INT64</code>：表示每个元素占用8字节</li>
+</ul>
+</blockquote>
+<h3 id="Zset"><a href="#Zset" class="headerlink" title="Zset"></a>Zset</h3><p>Zset 是一个有序的集合类型，用于存储不重复的字符串元素。Zset 中会给每个元素关联一个double 类型的权重值，所有元素通过这个权重来进行从小到大的排序。元素不可以重复，但是权重是可以重复的。一个Zset 类型的键可以存储 $2^{32} - 1$ 个元素。</p>
+<p>Zset 的底层实现分为两种：</p>
+<ul>
+<li><code>ziplist</code>：压缩列表，在Zset 的元素个数小于128，每个元素的值小于64字节时，使用 <code>ziplist</code>；</li>
+<li><code>skiplist</code>：跳表，在不满足使用 <code>ziplist</code> 的条件时，使用 <code>skiplist</code>。</li>
+</ul>
+<blockquote>
+<p>在Redis 7.0版本之后，<code>ziplist</code> 被弃置，使用 <code>listpack</code> 结构（紧凑列表）来代替。</p>
+<p>底层数据结构转换的阈值可以通过修改配置来进行设置：</p>
+<ul>
+<li><code>zset-max-listpack-entries</code>： 用于配置元素个数，默认128；</li>
+<li><code>zset-max-listpack-value</code>： 用于配置元素值的大小，默认64。</li>
+</ul>
+</blockquote>
+<h4 id="skiplist"><a href="#skiplist" class="headerlink" title="skiplist"></a>skiplist</h4><p>跳表是一种随机化的数据结构，本质是一种可以进行二分查找的有序链表。跳表在原有的有序链表上增加了多级索引，通过索引来实现快速查找。跳表不仅能提高搜索性能，也可以提高插入和删除操作的性能。<br><img src="https://s2.loli.net/2024/07/28/sb6gr5ZBDn1dSyN.png" alt="Clip_2024-07-28_19-59-41.png"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> ZSKIPLIST_MAXLEVEL 32</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ZSKIPLIST_P 0.25</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">zskiplist</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">zskiplistNode</span> *<span class="title">header</span>, *<span class="title">tail</span>;</span> <span class="comment">// 头和尾</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> length; <span class="comment">// 元素数量</span></span><br><span class="line">    <span class="type">int</span> level; <span class="comment">// 层数</span></span><br><span class="line">&#125; zskiplist;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">zskiplistNode</span> &#123;</span></span><br><span class="line">    robj *obj; <span class="comment">// 存放对象数据 一般为SDS</span></span><br><span class="line">    <span class="type">double</span> score; <span class="comment">// 对象权重值</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">zskiplistNode</span> *<span class="title">backward</span>;</span> <span class="comment">// 前对象指针</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">zskiplistLevel</span> &#123;</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">zskiplistNode</span> *<span class="title">forward</span>;</span> <span class="comment">// 后对象指针</span></span><br><span class="line">        <span class="type">unsigned</span> <span class="type">int</span> span; <span class="comment">// 跨度</span></span><br><span class="line">    &#125; level[];</span><br><span class="line">&#125; zskiplistNode;</span><br></pre></td></tr></table></figure>
+
+
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>类型</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>header</td>
+<td>zskiplistNode*</td>
+<td>指向头节点</td>
+</tr>
+<tr>
+<td>tail</td>
+<td>zskiplistNode*</td>
+<td>指向尾节点</td>
+</tr>
+<tr>
+<td>length</td>
+<td>unsigned long</td>
+<td>记录数据数量</td>
+</tr>
+<tr>
+<td>leven</td>
+<td>int</td>
+<td>记录最大层数</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>类型</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>obj</td>
+<td>SDS</td>
+<td>记录实际数据</td>
+</tr>
+<tr>
+<td>score</td>
+<td>double</td>
+<td>记录权重值</td>
+</tr>
+<tr>
+<td>backward</td>
+<td>zskiplistNode*</td>
+<td>记录上一个节点地址</td>
+</tr>
+<tr>
+<td>level[]</td>
+<td>zskiplistLevel</td>
+<td>是一个数组，记录之后多个节点的地址和跨度</td>
+</tr>
+</tbody></table>
+<h5 id="为什么使用skiplist，而不是用平衡树呢？"><a href="#为什么使用skiplist，而不是用平衡树呢？" class="headerlink" title="为什么使用skiplist，而不是用平衡树呢？"></a>为什么使用skiplist，而不是用平衡树呢？</h5><ol>
+<li>内存方面：平衡树每个节点存放两个指针，而跳表中每个节点包含指针数目平均下来为 $\frac{1}{1 - p}$，内存占用更小。</li>
+<li>操作方面：平衡树中，找到指定范围的小值之后，还需要使用中序遍历继续寻找其他不超过大值的节点，而跳表中范围查询很方便，仅仅需要找到最小值，然后通过链表进行遍历即可。</li>
+<li>算法实现：跳表相对于平衡树的实现要简单得多，平衡树的插入和删除操作都可能引发子树的调整，逻辑复杂，但是跳表的插入和删除只需要修改相邻节点的指针即可，逻辑简单且高效。</li>
+</ol>
+<h2 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h2><p>基本数据类型</p>
+<ul>
+<li>String：缓存对象、常规计数、分布式锁、共享session信息等</li>
+<li>List：消息队列</li>
+<li>Hash：缓存对象、购物车等</li>
+<li>Set：聚合计算（并集、交集、差集），例如点赞、共同关注、抽奖活动等</li>
+<li>Zset：排序场景，例如排行榜、电话和姓名排序等</li>
+</ul>
+<p>其他数据类型</p>
+<ul>
+<li>BitMap：二值状态统计的场景，例如签到、判断用户登录状态、连续签到用户总数等</li>
+<li>HyperLogLog：海量数据基数统计的场景，例如百万级网页UV计数等</li>
+<li>GEO：存储地理位置信息的场景，例如打车服务</li>
+<li>Stream：消息队列，相较于List 实现的消息队列，有两个特有的特性：可以自动生成全局唯一的消息ID，支持以消费组的形式消费数据</li>
+</ul>
+<blockquote>
+<p>什么是消费组？<br>消费组指的是一组消费者，共同消费消息队列中的数据，每个消费组都有一个唯一的标识符，组内的消费者共同协作，确保每条消息只被组内的一个消费者处理一次。</p>
+<p>消费组的工作原理</p>
+<ol>
+<li>消息分配<ul>
+<li>消息队列中的每条消息通常都会有一个唯一的偏移量(Offset)。</li>
+<li>消费组内的消费者相互协作，分配各自要处理的消息范围。</li>
+</ul>
+</li>
+<li>消息消费<ul>
+<li>一个消费者处理消息之后，会向系统发送确认，表示该消息已经被处理。</li>
+<li>系统会记录每个消费者的消费进度，以便在消费者重新启动时能够恢复消息进度。</li>
+</ul>
+</li>
+<li>负载均衡<ul>
+<li>如果消费组内消费者数量发生变化，系统会重新分配消息给各个消费者，保证负载均衡和高可用性。</li>
+</ul>
+</li>
+</ol>
+<p>消费组的优点</p>
+<ol>
+<li>并行处理：消费组允许多个消费者并行处理消息，提高了系统的吞吐量。</li>
+<li>高可用性：如果消费组内的某个消费者发生故障，其他消费者可以接管未处理的消息，保证系统的高可用性。</li>
+<li>负载均衡：系统会自动进行负载均衡，确保各个消费者负载大致分布均匀。</li>
+</ol>
+</blockquote>
+<!-- 
+[聊一聊redis十种数据类型及底层原理](https://www.cnblogs.com/reim/p/17377883.html)
+[Redis内存模型](https://www.cnblogs.com/kismetv/p/8654978.html)
+[Redis内部数据结构详解](http://zhangtielei.com/posts/blog-redis-dict.html)
+
+[Redis之SDS字符串，到底高效在哪里？（深入分析）](https://juejin.cn/post/7095718147864887304)
+[Redis的String类型内部实现 以及 关于SDS的解释](https://cloud.tencent.com/developer/article/2035978)
+[redis字符串怎么自动扩容](https://worktile.com/kb/ask/739130.html)
+
+
+[底层数据结构listpack实现原理](https://juejin.cn/post/7220950867339247653)
+[redis之listpack](https://blog.csdn.net/happytree001/article/details/119685207)
+[Redis7.0代码分析：底层数据结构listpack实现原理](https://juejin.cn/post/7220950867339247653)
+[Redis 源码简洁剖析 06 - quicklist 和 listpack](https://www.cnblogs.com/510602159-Yano/p/15870083.html)
+[Redis 数据结构(下) quicklist、listpack](https://juejin.cn/post/7095645139820871710)
+[Redis数据结构之listpack](https://blog.csdn.net/qq_32099833/article/details/133889244)
+
+-->
+
+<h1 id="啊"><a href="#啊" class="headerlink" title="啊"></a>啊</h1><h2 id="啊-1"><a href="#啊-1" class="headerlink" title="啊"></a>啊</h2><h3 id="啊-2"><a href="#啊-2" class="headerlink" title="啊"></a>啊</h3><h4 id="啊-3"><a href="#啊-3" class="headerlink" title="啊"></a>啊</h4><h5 id="啊-4"><a href="#啊-4" class="headerlink" title="啊"></a>啊</h5><h6 id="啊-5"><a href="#啊-5" class="headerlink" title="啊"></a>啊</h6></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://moon2702.github.io">moon2702</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://moon2702.github.io/2024/07/24/Redis%20%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">http://moon2702.github.io/2024/07/24/Redis 数据结构/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://moon2702.github.io" target="_blank">MOON</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Redis/">Redis</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2024/07/21/l7A41mHsp9PDS6W.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/07/23/01-%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98/" title="01-背包问题"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">01-背包问题</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s2.loli.net/2024/07/21/l7A41mHsp9PDS6W.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">moon2702</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">4</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">4</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/moon2702"><i class="fab fa-github"></i><span>Github 首页</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFRedis"><span class="toc-number">1.</span> <span class="toc-text">什么是Redis</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis%E7%89%B9%E7%82%B9"><span class="toc-number">1.1.</span> <span class="toc-text">Redis特点</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Redis-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">Redis 数据结构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#redisObject"><span class="toc-number">2.1.</span> <span class="toc-text">redisObject</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#type"><span class="toc-number">2.1.1.</span> <span class="toc-text">type</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#encoding"><span class="toc-number">2.1.2.</span> <span class="toc-text">encoding</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#lru"><span class="toc-number">2.1.3.</span> <span class="toc-text">lru</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#refcount"><span class="toc-number">2.1.4.</span> <span class="toc-text">refcount</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ptr"><span class="toc-number">2.1.5.</span> <span class="toc-text">ptr</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E7%A7%8D%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%9A%84%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.2.</span> <span class="toc-text">五种数据结构的具体实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#String"><span class="toc-number">2.2.1.</span> <span class="toc-text">String</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E9%83%A8%E7%BC%96%E7%A0%81"><span class="toc-number">2.2.1.1.</span> <span class="toc-text">内部编码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%96%E7%A0%81%E8%BD%AC%E6%8D%A2"><span class="toc-number">2.2.1.2.</span> <span class="toc-text">编码转换</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#List"><span class="toc-number">2.2.2.</span> <span class="toc-text">List</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.2.2.1.</span> <span class="toc-text">底层实现</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#ziplist"><span class="toc-number">2.2.2.1.1.</span> <span class="toc-text">ziplist</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#linkedlist"><span class="toc-number">2.2.2.1.2.</span> <span class="toc-text">linkedlist</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#quicklist"><span class="toc-number">2.2.2.1.3.</span> <span class="toc-text">quicklist</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hash"><span class="toc-number">2.2.3.</span> <span class="toc-text">Hash</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0-1"><span class="toc-number">2.2.3.1.</span> <span class="toc-text">底层实现</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#listpack"><span class="toc-number">2.2.3.1.1.</span> <span class="toc-text">listpack</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#listpack%E7%9A%84%E9%81%8D%E5%8E%86"><span class="toc-number">2.2.3.1.1.1.</span> <span class="toc-text">listpack的遍历</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#hashtable"><span class="toc-number">2.2.3.1.2.</span> <span class="toc-text">hashtable</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Set"><span class="toc-number">2.2.4.</span> <span class="toc-text">Set</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#intset"><span class="toc-number">2.2.4.1.</span> <span class="toc-text">intset</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Zset"><span class="toc-number">2.2.5.</span> <span class="toc-text">Zset</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#skiplist"><span class="toc-number">2.2.5.1.</span> <span class="toc-text">skiplist</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8skiplist%EF%BC%8C%E8%80%8C%E4%B8%8D%E6%98%AF%E7%94%A8%E5%B9%B3%E8%A1%A1%E6%A0%91%E5%91%A2%EF%BC%9F"><span class="toc-number">2.2.5.1.1.</span> <span class="toc-text">为什么使用skiplist，而不是用平衡树呢？</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">2.3.</span> <span class="toc-text">使用场景</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%95%8A"><span class="toc-number">3.</span> <span class="toc-text">啊</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%95%8A-1"><span class="toc-number">3.1.</span> <span class="toc-text">啊</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%95%8A-2"><span class="toc-number">3.1.1.</span> <span class="toc-text">啊</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%95%8A-3"><span class="toc-number">3.1.1.1.</span> <span class="toc-text">啊</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%95%8A-4"><span class="toc-number">3.1.1.1.1.</span> <span class="toc-text">啊</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#%E5%95%8A-5"><span class="toc-number">3.1.1.1.1.1.</span> <span class="toc-text">啊</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/07/24/Redis%20%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="Redis 数据结构">Redis 数据结构</a><time datetime="2024-07-24T05:38:00.000Z" title="发表于 2024-07-24 13:38:00">2024-07-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/07/23/01-%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98/" title="01-背包问题">01-背包问题</a><time datetime="2024-07-23T05:24:12.000Z" title="发表于 2024-07-23 13:24:12">2024-07-23</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('https://s2.loli.net/2024/07/25/mkzJEb7GqutfaF3.png')"><div id="footer-wrap"><div class="copyright">&copy;2024 By moon2702</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div></div></body></html>
