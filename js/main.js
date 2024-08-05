@@ -449,7 +449,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       }
 
-      btf.addEventListenerPjax($cardToc, 'click', tocItemClickFn)
+      // 点击时的滚动效果
+      // btf.addEventListenerPjax($cardToc, 'click', tocItemClickFn)
 
       autoScrollToc = item => {
         const activePosition = item.getBoundingClientRect().top
@@ -464,16 +465,35 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // find head position & add active class
-    const $articleList = $article.querySelectorAll('h1,h2,h3,h4,h5,h6')
+    let maxDepth = config.tocMaxDepth
+    let tocLevels = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']
+    let tocLeven = ''
+    if (maxDepth >= 6) tocLeven = tocLevels.join(',')
+    tocLeven = tocLevels.slice(0, maxDepth).join(',')
+    // if (maxDepth === 1) {
+    //   tocLeven = 'h1'
+    // } else if (maxDepth === 2) {
+    //   tocLeven = 'h1,h2'
+    // } else if (maxDepth === 3) {
+    //   tocLeven = 'h1,h2,h3'
+    // } else if (maxDepth === 4) {
+    //   tocLeven = 'h1,h2,h3,h4'
+    // } else if (maxDepth === 5) {
+    //   tocLeven = 'h1,h2,h3,h4,h5'
+    // } else {
+    //   tocLeven = 'h1,h2,h3,h4,h5,h6'
+    // }
+
+    const $articleList = $article.querySelectorAll(tocLeven)
     let detectItem = ''
     const findHeadPosition = top => {
       if (top === 0) {
         return false
       }
-
+    
       let currentId = ''
       let currentIndex = ''
-
+    
       $articleList.forEach((ele, index) => {
         if (top > btf.getEleTop(ele) - 80) {
           const id = ele.id
@@ -481,30 +501,30 @@ document.addEventListener('DOMContentLoaded', function () {
           currentIndex = index
         }
       })
-
+    
       if (detectItem === currentIndex) return
-
+    
       if (isAnchor) btf.updateAnchor(currentId)
-
+    
       detectItem = currentIndex
-
+    
       if (isToc) {
         $cardToc.querySelectorAll('.active').forEach(i => { i.classList.remove('active') })
-
+    
         if (currentId === '') {
           return
         }
-
+        
         const currentActive = $tocLink[currentIndex]
         currentActive.classList.add('active')
-
+    
         setTimeout(() => {
           autoScrollToc(currentActive)
         }, 0)
-
+    
         if (isExpand) return
         let parent = currentActive.parentNode
-
+    
         for (; !parent.matches('.toc'); parent = parent.parentNode) {
           if (parent.matches('li')) parent.classList.add('active')
         }
