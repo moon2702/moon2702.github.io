@@ -468,21 +468,8 @@ document.addEventListener('DOMContentLoaded', function () {
     let maxDepth = config.tocMaxDepth
     let tocLevels = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']
     let tocLeven = ''
-    if (maxDepth >= 6) tocLeven = tocLevels.join(',')
+    if (maxDepth >= 6 || maxDepth <= 0) tocLeven = tocLevels.join(',')
     tocLeven = tocLevels.slice(0, maxDepth).join(',')
-    // if (maxDepth === 1) {
-    //   tocLeven = 'h1'
-    // } else if (maxDepth === 2) {
-    //   tocLeven = 'h1,h2'
-    // } else if (maxDepth === 3) {
-    //   tocLeven = 'h1,h2,h3'
-    // } else if (maxDepth === 4) {
-    //   tocLeven = 'h1,h2,h3,h4'
-    // } else if (maxDepth === 5) {
-    //   tocLeven = 'h1,h2,h3,h4,h5'
-    // } else {
-    //   tocLeven = 'h1,h2,h3,h4,h5,h6'
-    // }
 
     const $articleList = $article.querySelectorAll(tocLeven)
     let detectItem = ''
