@@ -1,0 +1,660 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Redis 相关命令 | MOON</title><meta name="author" content="moon2702"><meta name="copyright" content="moon2702"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="本篇记录了一些Redis中常用命令的使用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis 相关命令">
+<meta property="og:url" content="http://moon2702.github.io/2024/07/30/Redis%20%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4/index.html">
+<meta property="og:site_name" content="MOON">
+<meta property="og:description" content="本篇记录了一些Redis中常用命令的使用">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2024/07/21/l7A41mHsp9PDS6W.jpg">
+<meta property="article:published_time" content="2024-07-30T11:07:52.000Z">
+<meta property="article:modified_time" content="2024-08-11T11:24:50.920Z">
+<meta property="article:author" content="moon2702">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.loli.net/2024/07/21/l7A41mHsp9PDS6W.jpg"><link rel="shortcut icon" href="/img/favicon-32x32-next.png"><link rel="canonical" href="http://moon2702.github.io/2024/07/30/Redis%20%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":200},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Redis 相关命令',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-08-11 19:24:50'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+document.addEventListener('pjax:send', () => {
+  Pace.restart()
+})
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2024/07/21/l7A41mHsp9PDS6W.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">11</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://s2.loli.net/2024/07/25/mkzJEb7GqutfaF3.png')"><nav id="nav"><span id="blog-info"><a href="/" title="MOON"><span class="site-name">MOON</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Redis 相关命令</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2024-07-30T11:07:52.000Z" title="发表于 2024-07-30 19:07:52">2024-07-30</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%BB%8F%E5%8E%86/">学习经历</a></span></div><div class="meta-secondline"></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="Redis-启动"><a href="#Redis-启动" class="headerlink" title="Redis 启动"></a>Redis 启动</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable redis # 配置开机自启</span><br><span class="line"></span><br><span class="line">systemctl start redis # 启动Redis服务端</span><br><span class="line"></span><br><span class="line">systemctl status redis # 查看Redis服务端的状态</span><br><span class="line"></span><br><span class="line">systemctl restart redis # 重启Redis服务端</span><br><span class="line"></span><br><span class="line">systemctl stop redis # 关闭Redis服务端</span><br><span class="line"></span><br><span class="line">sudo tail -f /var/log/redis/redis.log # 查看Redis服务端的日志</span><br><span class="line"></span><br><span class="line">redis-cli -h 127.0.0.1 -p 6379 # Redis客户端登录</span><br></pre></td></tr></table></figure>
+
+<h1 id="通用命令"><a href="#通用命令" class="headerlink" title="通用命令"></a>通用命令</h1><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PING</td>
+<td>测试连接是否存在</td>
+</tr>
+<tr>
+<td>QUIT</td>
+<td>关闭当前连接</td>
+</tr>
+<tr>
+<td>AUTH</td>
+<td>验证密码</td>
+</tr>
+<tr>
+<td>ECHO</td>
+<td>回显输入内容</td>
+</tr>
+<tr>
+<td>INFO</td>
+<td>查看数据库相关的统计信息</td>
+</tr>
+<tr>
+<td>ECHO</td>
+<td>回显的输入字符串</td>
+</tr>
+<tr>
+<td>SELECT</td>
+<td>选择数据库</td>
+</tr>
+<tr>
+<td>FLUSHDB</td>
+<td>清空当前数据库</td>
+</tr>
+<tr>
+<td>FLUSHALL</td>
+<td>清空所有数据库</td>
+</tr>
+<tr>
+<td>COMMAND</td>
+<td>获取所有可用命令</td>
+</tr>
+<tr>
+<td>SAVE</td>
+<td>异步保存数据到硬盘</td>
+</tr>
+</tbody></table>
+<h2 id="COMMAND"><a href="#COMMAND" class="headerlink" title="COMMAND"></a>COMMAND</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">COMMAND # 显示全部命令的信息</span><br><span class="line"></span><br><span class="line">COMMAND INFO &lt;name [name] ...&gt; # 显示指定命令的信息</span><br><span class="line"></span><br><span class="line">COMMAND COUNT # 显示可用的Redis命令个数</span><br><span class="line"></span><br><span class="line">COMMAND GETKEYS &lt;command name&gt; &lt;a b c d e f...&gt; # 用于测试命令中的KEY的位置</span><br></pre></td></tr></table></figure>
+
+<p>使用 <code>COMMAND INFO</code> 命令之后，每个命令会列出六个参数，每一个参数含义如下：</p>
+<ul>
+<li>命令名称</li>
+<li>命令参数个数</li>
+<li>命令属性</li>
+<li>参数列表中首一个可以为 <code>KEY</code> 的位置</li>
+<li>参数列表中末一个可以为 <code>KEY</code> 的位置</li>
+<li>多个 <code>KEY</code> 之间的步长</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1) 1) &quot;get&quot;</span><br><span class="line">   2) (integer) 2</span><br><span class="line">   3) 1) readonly</span><br><span class="line">      2) fast</span><br><span class="line">   4) (integer) 1</span><br><span class="line">   5) (integer) 1</span><br><span class="line">   6) (integer) 1</span><br></pre></td></tr></table></figure>
+
+<p>命令参数个数的规则：</p>
+<ul>
+<li>正数：命令必须有固定的参数个数</li>
+<li>负数：命令的最小数量的参数个数</li>
+<li>参数个数计数包含命令名称本身</li>
+</ul>
+<p>命令属性举例：</p>
+<ul>
+<li>write 命令可能会修改键值</li>
+<li>readonly 命令永远不会修改键值</li>
+<li>fast 命令是常数或者log(N)级别时间复杂度</li>
+<li>movablekeys 命令中没有为 <code>KEY</code> 指定位置</li>
+</ul>
+<p>命令中 <code>KEY</code> 的位置：</p>
+<ul>
+<li>第4，5，6列共同指明KEY的位置，4和5表示存在 <code>KEY</code> 的范围，6表示步长</li>
+<li>0，0，0 参数列表中没有 <code>KEY</code></li>
+<li>1，1，1 参数列表中第一位是 <code>KEY</code></li>
+<li>2，2，2 参数列表中第二位是 <code>KEY</code></li>
+<li>1，-1，2 参数列表中从首位到末尾，1，3，5…是 <code>KEY</code></li>
+<li>1，2，1 参数列表中前两位是 <code>KEY</code></li>
+<li>1，-2，1 参数列表中从首位到倒数第二位，都是 <code>KEY</code></li>
+</ul>
+<h2 id="SAVE"><a href="#SAVE" class="headerlink" title="SAVE"></a>SAVE</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SAVE # 异步保存数据到硬盘</span><br><span class="line">BGSAVE # 在后台异步保存当前数据库的数据到磁盘</span><br><span class="line">SHUTDOWN # 异步保存数据到硬盘，并且关闭服务器</span><br></pre></td></tr></table></figure>
+
+<h1 id="键命令"><a href="#键命令" class="headerlink" title="键命令"></a>键命令</h1><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/del.html">DEL</a></td>
+<td>删除若干个键</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/keys.html">KEYS</a></td>
+<td>获取符合条件的所有键</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/exists.html">EXISTS</a></td>
+<td>检查键是否存在</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/expire.html">EXPIRE</a></td>
+<td>设置过期时间 秒</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/persist.html">PERSIST</a></td>
+<td>移除过期时间</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/ttl.html">TTL</a></td>
+<td>获取剩余时间</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/type.html">TYPE</a></td>
+<td>获取键的类型</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/move.html">MOVE</a></td>
+<td>将键移动到指定数据库</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/randomkey.html">RANDOMKEY</a></td>
+<td>从当前库中随机获取一个键</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/rename.html">RENAME</a></td>
+<td>修改键的名字</td>
+</tr>
+</tbody></table>
+<h2 id="KEYS"><a href="#KEYS" class="headerlink" title="KEYS"></a>KEYS</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">KEYS * # 匹配所有键</span><br><span class="line"></span><br><span class="line">KEYS he*o # &#x27;*&#x27;用于匹配多个字符，例如hello、hepo</span><br><span class="line"></span><br><span class="line">KEYS hel?o # &#x27;?&#x27;用于匹配单个字符，例如hello、helno</span><br><span class="line"></span><br><span class="line">KEYS he[abc]o # 表示匹配 heao、hebo、heco</span><br><span class="line"></span><br><span class="line">KEYS he[^c]o # 表示不匹配heco</span><br><span class="line"></span><br><span class="line">KEYS h[a-d]llo # 表示匹配hallo、hbllo、hcllo、hdllo</span><br></pre></td></tr></table></figure>
+
+<p><code>KEYS</code> 的使用会引发锁而导致阻塞，在生产环境中一般不会使用：</p>
+<ul>
+<li><code>KEYS</code>性能随着数据库数据增多而变慢。</li>
+<li><code>KEYS</code>引发阻塞，导致在集群场景中可能判断Redis 已经故障，从而故障切换。可能引发雪崩。</li>
+</ul>
+<p>在生产环境中，建议使用 <code>SCAN</code> 命令来替代 <code>KEYS</code>。</p>
+<h2 id="EXPIRE"><a href="#EXPIRE" class="headerlink" title="EXPIRE"></a>EXPIRE</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">EXPIRE &lt;time&gt; # 精确到秒的相对时间</span><br><span class="line"></span><br><span class="line">PEXPIRE &lt;time&gt; # 精确到毫秒的相对时间</span><br><span class="line"></span><br><span class="line">EXPIREAT &lt;timestamp&gt; # 精确到秒的时间戳</span><br><span class="line"></span><br><span class="line">PEXPIREAT &lt;timestamp&gt; # 精确到毫秒的时间戳</span><br></pre></td></tr></table></figure>
+
+<h2 id="TTL"><a href="#TTL" class="headerlink" title="TTL"></a>TTL</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">TTL &lt;KEY&gt; # 获取剩余的时间，精确到秒</span><br><span class="line"></span><br><span class="line">PTTL &lt;KEY&gt; # 获取剩余的时间，精确到毫秒</span><br></pre></td></tr></table></figure>
+
+<h2 id="RENAME"><a href="#RENAME" class="headerlink" title="RENAME"></a>RENAME</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RENAME &lt;KEY&gt; # 修改键名</span><br><span class="line"></span><br><span class="line">RENAMENX &lt;KEY&gt; # 仅当新键名不存在时，才修改</span><br></pre></td></tr></table></figure>
+
+<h1 id="String"><a href="#String" class="headerlink" title="String"></a>String</h1><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/strlen.html">STRLEN</a></td>
+<td>返回 key 所储存的字符串值的长度</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/set.html">SET</a></td>
+<td>指定添加一个 key-value 对</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/get.html">GET</a></td>
+<td>获取指定 key 的值</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/incr.html">INCR</a></td>
+<td>将 key 中储存的数字值增一</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/incrbyfloat.html">INCRBYFLOAT</a></td>
+<td>将 key 所储存的值加上给定的浮点增量值 ( increment )</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/append.html">APPEND</a></td>
+<td>将 value 追加到 key 原来的值的末尾</td>
+</tr>
+</tbody></table>
+<h2 id="SET"><a href="#SET" class="headerlink" title="SET"></a>SET</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">SET &lt;key&gt; &lt;value&gt; # 指定添加一个String类型的键值对</span><br><span class="line"></span><br><span class="line">MSET &lt;key1&gt; &lt;value1&gt; &lt;key2&gt; &lt;value2&gt; ... # 指定添加多个键值对</span><br><span class="line"></span><br><span class="line">SETNX &lt;key&gt; &lt;value&gt; # 在KEY不存在时才添加键值对</span><br><span class="line"></span><br><span class="line">MSETNX &lt;key1&gt; &lt;value1&gt; &lt;key2&gt; &lt;value2&gt; ... # 在指定的所有KEY都不存在时，添加键值对 | 要么全成功 要么全失败</span><br><span class="line"></span><br><span class="line">SETEX &lt;key&gt; &lt;seconds&gt; &lt;value&gt; # 在添加键值对的时候，同时设置过期时间(秒) | 相较于执行两个命令 该命令为原子操作</span><br><span class="line"></span><br><span class="line">PSETEX &lt;key&gt; &lt;milliseconds&gt; &lt;value&gt; # 在添加键值对的时候，同时设置过期时间(毫秒)</span><br><span class="line"></span><br><span class="line">SETBIT &lt;key&gt; &lt;offset&gt; &lt;0/1&gt; # 将偏移量为offset的bit位设置为0或者1 | 偏移量以 bit 为单位</span><br><span class="line"></span><br><span class="line">SETRANGE &lt;key&gt; &lt;offset&gt; &lt;value&gt; # 将偏移量为offset的字节覆盖为指定value | 偏移量以 字节 为单位</span><br></pre></td></tr></table></figure>
+
+<h2 id="GET"><a href="#GET" class="headerlink" title="GET"></a>GET</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">GET &lt;key&gt; # 获取一个指定KEY的值</span><br><span class="line"></span><br><span class="line">GETSET &lt;key&gt; &lt;value&gt; # 获取一个指定KEY的值，并将其设置为新值</span><br><span class="line"></span><br><span class="line">MGET &lt;key&gt; &lt;key&gt; ...# 获取多个指定KEY的值</span><br><span class="line"></span><br><span class="line">GETRANGE &lt;key&gt; &lt;start&gt; &lt;end&gt; # 获取指定KEY中一定范围的字串 | 单位为字节</span><br><span class="line"></span><br><span class="line">GETBIT &lt;key&gt; &lt;offset&gt; # 获取指定偏移量上的位 | 偏移量以 bit 为单位</span><br></pre></td></tr></table></figure>
+
+<h2 id="INCR"><a href="#INCR" class="headerlink" title="INCR"></a>INCR</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">INCR &lt;key&gt; # 将 key 中储存的数字值增一</span><br><span class="line"></span><br><span class="line">DECR &lt;key&gt; # 将 key 中储存的数字值减一</span><br><span class="line"></span><br><span class="line">INCRBY &lt;key&gt; &lt;value&gt; # 将 key 中存储的值加上 value</span><br><span class="line"></span><br><span class="line">DECRBY &lt;key&gt; &lt;value&gt; # 将 key 中存储的值减去 value</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>value</code> 的值可正可负。</li>
+<li>命令操作的范围是 64bit 的有符号整数，超出此范围会报错。($-2^{64}$ ~ $2^{64} - 1$)</li>
+<li>如果 key 不存在，创建一个 value 为 0 的 key，然后执行相应操作。</li>
+</ul>
+<h2 id="INCRBYFLOAT"><a href="#INCRBYFLOAT" class="headerlink" title="INCRBYFLOAT"></a>INCRBYFLOAT</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">INCRBYFLOAT &lt;key&gt; &lt;fvalue&gt; # 将 key 中存储的值 加上 fvalue</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>fvalue 是以字符串的形式存储的。</li>
+<li>如果 key 不存在，创建一个 value 为 0 的 key，然后执行相应操作。</li>
+<li>结果最多只保留小数点的后十七位。</li>
+<li>经过测试，Redis3.x 版本中，当 key 中存放的数据在 $1E237$ 左右时，会超出Redis 浮点数表示范围；Redis6.x 版本中，key 存放数据在 $1E4933$ 左右时，会报错。</li>
+</ul>
+<h1 id="Hash"><a href="#Hash" class="headerlink" title="Hash"></a>Hash</h1><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/hlen.html">HLEN</a></td>
+<td>返回存储在 key 中的哈希表的字段数量</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/hexists.html">HEXISTS</a></td>
+<td>用于判断哈希表中字段是否存在</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/hset.html">HSET</a></td>
+<td>用于设置存储在 key 中的哈希表字段的值</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/hdel.html">HDEL</a></td>
+<td>用于删除哈希表中一个或多个字段</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/hget.html">HGET</a></td>
+<td>获取存储在哈希表中指定字段的值</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/hincrby.html">HINCRBY</a></td>
+<td>为存储在 key 中的哈希表指定字段做整数增量运算</td>
+</tr>
+</tbody></table>
+<h2 id="HSET"><a href="#HSET" class="headerlink" title="HSET"></a>HSET</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HSET &lt;hkey&gt; &lt;field&gt; &lt;value&gt; # 添加一个 Hash 类型的键，同时可以在其中设置一个 field-value</span><br><span class="line">HDEL &lt;hkey&gt; &lt;field&gt; # 删除一个 field </span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>自Redis4.0 版本始，HSET 命令可以同时添加多个 <code>field-value</code>。</li>
+<li>自Redis2.4 版本始，HDEL 命令可以同时删除多个 <code>field</code>。</li>
+<li>Hash 类型的键不支持在创建的同时设置过期时间，可以通过 <code>MULTI</code> 事务 或者 <code>Lua</code> 脚本来实现类似的功能。</li>
+</ul>
+<h2 id="HGET"><a href="#HGET" class="headerlink" title="HGET"></a>HGET</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">HGET &lt;hkey&gt; &lt;field&gt; # 获取指定键中一个 field 的 value</span><br><span class="line"></span><br><span class="line">HGETALL &lt;hkey&gt; # 获取指定键中的所有 field-value</span><br><span class="line"></span><br><span class="line">HKEYS &lt;hkey&gt; # 获取指定键中的所有 field</span><br><span class="line"></span><br><span class="line">HVALS &lt;hkey&gt; # 获取指定键中的所有 value</span><br></pre></td></tr></table></figure>
+
+<h1 id="List"><a href="#List" class="headerlink" title="List"></a>List</h1><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/llen.html">LLEN</a></td>
+<td>获取列表长度</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/rpush.html">RPUSH</a></td>
+<td>在列表中添加一个或多个值</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/lpush.html">LPUSH</a></td>
+<td>将一个或多个值插入到列表头部</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/blpop.html">BLPOP</a></td>
+<td>移出并获取列表的第一个元素</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/linsert.html">LINSERT</a></td>
+<td>在列表的元素前或者后插入元素</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/lrem.html">LREM</a></td>
+<td>移除列表元素</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/lset.html">LSET</a></td>
+<td>通过索引设置列表元素的值</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/lrange.html">LRANGE</a></td>
+<td>获取列表指定范围内的元素</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/lindex.html">LINDEX</a></td>
+<td>通过索引获取列表中的元素</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/ltrim.html">LTRIM</a></td>
+<td>对一个列表进行修剪(trim)</td>
+</tr>
+</tbody></table>
+<h2 id="RPUSH"><a href="#RPUSH" class="headerlink" title="RPUSH"></a>RPUSH</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">RPUSH &lt;key&gt; &lt;value&gt; ... # 在列表右侧添加一个或者多个值</span><br><span class="line"></span><br><span class="line">RPUSHX &lt;key&gt; &lt;value&gt; # 只有当列表存在时添加一个或者多个值</span><br><span class="line"></span><br><span class="line">RPOP &lt;key&gt; # 移除并获取列表最右边的元素</span><br><span class="line"></span><br><span class="line">RPOPLPUSH &lt;source&gt; &lt;destination&gt; &lt;timeout&gt; # 移除 source 右侧的元素，将该元素添加到 destination 的左侧 | 会返回该元素</span><br></pre></td></tr></table></figure>
+
+<h2 id="LPUSH"><a href="#LPUSH" class="headerlink" title="LPUSH"></a>LPUSH</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">LPUSH &lt;key&gt; &lt;value&gt; ... # 在列表左侧添加一个或者多个值</span><br><span class="line"></span><br><span class="line">LPUSHX &lt;key&gt; &lt;value&gt; ... # 只有当列表存在时添加一个或者多个值</span><br><span class="line"></span><br><span class="line">LPOP &lt;key&gt; # 移除并获取列表最左边的元素</span><br></pre></td></tr></table></figure>
+
+<h2 id="BLPOP"><a href="#BLPOP" class="headerlink" title="BLPOP"></a>BLPOP</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">BRPOP &lt;key&gt; ... &lt;timeout&gt; # 移除并获取列表最右边的元素 | 增加了一个超时时间</span><br><span class="line"></span><br><span class="line">BLPOP &lt;key&gt; ... &lt;timeout&gt; # 移除并获取列表最左边的元素 | 增加了一个超时时间</span><br><span class="line"></span><br><span class="line">BRPOPLPUSH &lt;source&gt; &lt;destination&gt; &lt;timeout&gt; # 移除 source 右侧的元素，将该元素添加到 destination 的左侧 | 增加了一个超时时间</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>以上命令是一些阻塞命令，如果源列表为空，那么将不会直接返回 nli ，将会等待一个新元素插入或者超时，才会返回。</li>
+</ul>
+<h2 id="LREM"><a href="#LREM" class="headerlink" title="LREM"></a>LREM</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LREM &lt;key&gt; &lt;count&gt; &lt;value&gt; # 删除指定元素 | count 表示需要删除的元素个数 | 返回实际删除的元素个数</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>count &gt; 0，表示从左向右遍历</li>
+<li>count &lt; 0，表示从右向左遍历</li>
+<li>count &#x3D; 0，表示删除全部符合的元素</li>
+</ul>
+<h1 id="Set"><a href="#Set" class="headerlink" title="Set"></a>Set</h1><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/scard.html">SCARD</a></td>
+<td>获取集合的成员数</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/sismember.html">SISMEMBER</a></td>
+<td>判断 member 元素是否是集合 key 的成员</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/sadd.html">SADD</a></td>
+<td>向集合添加一个或多个成员</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/smembers.html">SMEMBERS</a></td>
+<td>返回集合中的所有成员</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/sinter.html">SINTER</a></td>
+<td>返回给定所有集合的交集</td>
+</tr>
+</tbody></table>
+<h2 id="SADD"><a href="#SADD" class="headerlink" title="SADD"></a>SADD</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">SADD &lt;key&gt; &lt;member&gt; ... # 向集合中添加一个或者多个元素</span><br><span class="line"></span><br><span class="line">SMOVE &lt;source&gt; &lt;destination&gt; &lt;member&gt; # 将 member 元素从 source 移动到 destination 中</span><br><span class="line"></span><br><span class="line">SREM &lt;key&gt; &lt;member&gt; ... # 移除集合中一个或者多个元素</span><br><span class="line"></span><br><span class="line">SPOP &lt;key&gt; &lt;[count]&gt; # 移除并返回集合中一个随机元素</span><br></pre></td></tr></table></figure>
+
+<h2 id="SMEMBERS"><a href="#SMEMBERS" class="headerlink" title="SMEMBERS"></a>SMEMBERS</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">SMEMBERS &lt;key&gt; &lt;count&gt; # 返回集合中所有元素</span><br><span class="line"></span><br><span class="line">SSCAN &lt;key&gt; &lt;cursor&gt; &lt;[MATCH pattern]&gt; &lt;[COUNT count]&gt; # 迭代集合中所有元素</span><br><span class="line"></span><br><span class="line">SRANDMEMBER &lt;key&gt; &lt;[count]&gt; # 返回集合中一个或者多个随机数</span><br></pre></td></tr></table></figure>
+
+<h2 id="SINTER"><a href="#SINTER" class="headerlink" title="SINTER"></a>SINTER</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">SINTER &lt;key&gt; &lt;key&gt; ... # 返回给定集合的交集</span><br><span class="line">SUNION &lt;key&gt; &lt;key&gt; ... # 返回给定集合的并集</span><br><span class="line">SDIFF &lt;key&gt; &lt;key&gt; ... # 返回给定集合的差集</span><br><span class="line"></span><br><span class="line">SINTERSTORE &lt;destination&gt; &lt;key&gt; &lt;key&gt; ... # 返回给定集合的交集，并存放在 destination 集合中</span><br><span class="line">SUNIONSTORE &lt;destination&gt; &lt;key&gt; &lt;key&gt; ... # 返回给定集合的并集，并存放在 destination 集合中</span><br><span class="line">SDIFFSTORE &lt;destination&gt; &lt;key&gt; &lt;key&gt; ... # 返回给定集合的差集，并存放在 destination 集合中</span><br></pre></td></tr></table></figure>
+
+<h1 id="Zset"><a href="#Zset" class="headerlink" title="Zset"></a>Zset</h1><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/zcard.html">ZCARD</a></td>
+<td>获取有序集合的成员数</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/zadd.html">ZADD</a></td>
+<td>向有序集合添加一个或多个成员，或者更新已存在成员的分数</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/zincrby.html">ZINCRBY</a></td>
+<td>有序集合中对指定成员的分数加上增量 increment</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/zrange.html">ZRANGE</a></td>
+<td>返回有序集中指定索引区间内的成员，权重从低到高</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/zrem.html">ZREM</a></td>
+<td>移除有序集合中的一个或多个成员</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/zinterstore.html">ZINTERSTORE</a></td>
+<td>计算一个或多个有序集的交集，并存储在新的 key 中</td>
+</tr>
+</tbody></table>
+<h2 id="ZCARD"><a href="#ZCARD" class="headerlink" title="ZCARD"></a>ZCARD</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ZCARD &lt;key&gt; # 获取有序集合的成员总数</span><br><span class="line">ZCOUNT &lt;key&gt; &lt;min&gt; &lt;max&gt; # 获取指定权重区间内的成员数</span><br><span class="line">ZLEXCOUNT &lt;key&gt; &lt;min&gt; &lt;max&gt; # 获取指定字典序区间内的成员数</span><br></pre></td></tr></table></figure>
+
+<h2 id="ZADD"><a href="#ZADD" class="headerlink" title="ZADD"></a>ZADD</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ZADD &lt;key&gt; &lt;[NX|XX]&gt; &lt;[CH]&gt; &lt;INCR&gt; &lt;score member&gt; ... # 向有序集合中添加指定成员 | 已存在的成员更新权重</span><br><span class="line">ZINCRBY &lt;key&gt; &lt;increment&gt; &lt;member&gt; # 为有序集合中成员权重进行增量</span><br></pre></td></tr></table></figure>
+
+<h2 id="ZRANGE"><a href="#ZRANGE" class="headerlink" title="ZRANGE"></a>ZRANGE</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ZRANGE &lt;key&gt; &lt;start&gt; &lt;stop&gt; &lt;WITHSCORES&gt; # 返回有序集合指定索引区间的成员，权重从低到高</span><br><span class="line">ZREVRANGE &lt;key&gt; &lt;start&gt; &lt;stop&gt; &lt;WITHSCORES&gt; # 返回有序集合指定索引区间的成员，权重从高到低</span><br><span class="line">ZRANGEBYSCORE &lt;key&gt; &lt;min&gt; &lt;max&gt; &lt;[WITHSCORES]&gt; &lt;[LIMIT offset count]&gt; # 返回有序集合指定权重区间的成员，权重从低到高</span><br><span class="line">ZREVRANGEBYSCORE &lt;key&gt; &lt;max&gt; &lt;min&gt; &lt;[WITHSCORES]&gt; &lt;[LIMIT offset count]&gt; # 返回有序集合指定权重区间的成员，权重从高到低</span><br><span class="line">ZRANGEBYLEX &lt;key&gt; &lt;min&gt; &lt;max&gt; &lt;[LIMIT offset count]&gt; # 返回有序集合指定字典序区间的成员，权重从低到高</span><br><span class="line"></span><br><span class="line">ZREVRANK &lt;key&gt; &lt;member&gt; # 返回指定成员的排名值，权重从高到低</span><br><span class="line">ZRANK &lt;key&gt; &lt;member&gt; # 返回指定成员的索引值</span><br><span class="line">ZSCORE &lt;key&gt; &lt;member&gt; # 返回指定成员的权重值</span><br><span class="line"></span><br><span class="line">ZSCAN &lt;key&gt; &lt;cursor&gt; &lt;[MATCH pattern]&gt; &lt;[COUNT count]&gt; # 迭代有序集合中元素</span><br></pre></td></tr></table></figure>
+
+<h2 id="ZREM"><a href="#ZREM" class="headerlink" title="ZREM"></a>ZREM</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ZREM &lt;key&gt; &lt;member&gt; ... # 移除有序集合中的指定成员</span><br><span class="line">ZREMRANGEBYSCORE &lt;key&gt; &lt;min&gt; &lt;max&gt; # 移除指定权重区间内的所有成员</span><br><span class="line">ZREMRANGEBYRANK &lt;key&gt; &lt;start&gt; &lt;stop&gt; # 移除指定排名区间内的所有成员</span><br><span class="line">ZREMRANGEBYLEX &lt;key&gt; &lt;min&gt; &lt;max&gt; # 移除指定字典序区间内的所有成员</span><br></pre></td></tr></table></figure>
+
+<h2 id="ZINTERSTORE"><a href="#ZINTERSTORE" class="headerlink" title="ZINTERSTORE"></a>ZINTERSTORE</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ZINTERSTORE &lt;destination&gt; &lt;numkeys&gt; &lt;key&gt; ... &lt;[WEIGHTS weight]&gt; &lt;[AGGREGATE SUM|MIN|MAX]&gt; # 计算多个有序集合的交集，并存储在 destination 中</span><br><span class="line">ZUNIONSTORE &lt;destination&gt; &lt;numkeys&gt; &lt;key&gt; ... &lt;[WEIGHTS weight]&gt; &lt;[AGGREGATE SUM|MIN|MAX]&gt; # 计算多个有序集合的并集，并存储在 destination 中</span><br></pre></td></tr></table></figure>
+
+<h1 id="发布订阅"><a href="#发布订阅" class="headerlink" title="发布订阅"></a>发布订阅</h1><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/publish.html">PUBLISH</a></td>
+<td>向指定的频道发送一条消息。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/subscribe.html">SUBSCRIBE</a></td>
+<td>订阅一个或多个指定的频道。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/psubscribe.html">PSUBSCRIBE</a></td>
+<td>订阅符合某种模式的频道。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/unsubscribe.html">UNSUBSCRIBE</a></td>
+<td>退订一个或多个指定的频道。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/punsubscribe.html">PUNSUBSCRIBE</a></td>
+<td>退订符合某种模式的频道。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/pubsub.html">PUBSUB</a></td>
+<td>查看订阅与发布系统状态。</td>
+</tr>
+</tbody></table>
+<h1 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h1><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/multi.html">MULTI</a></td>
+<td>开始一个事务。之后的命令会被放入事务队列中，而不会立即执行。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/exec.html">EXEC</a></td>
+<td>执行事务队列中的所有命令。所有命令按照顺序作为一个原子操作执行。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/discard.html">DISCARD</a></td>
+<td>取消事务，清空事务队列中所有命令，并放弃执行。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/watch.html">WATCH</a></td>
+<td>监视一个或多个键，在事务执行前，如果任何一个被监视的键发生了变化，事务会被中止。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/unwatch.html">UNWATCH</a></td>
+<td>取消对所有键的监视。通常在调用 <code>EXEC</code> 之后自动取消监视，无需手动调用。</td>
+</tr>
+</tbody></table>
+<h1 id="Lua-脚本"><a href="#Lua-脚本" class="headerlink" title="Lua 脚本"></a>Lua 脚本</h1><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/eval.html">EVAL</a></td>
+<td>执行 Lua 脚本。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/evalsha.html">EVALSHA</a></td>
+<td>执行一个已经通过 <code>EVAL</code> 或 <code>SCRIPT LOAD</code> 命令缓存的 Lua 脚本。<code>EVALSHA</code> 通过脚本的 SHA1 校验和来引用该脚本。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/script-load.html">SCRIPT LOAD</a></td>
+<td>将一个 Lua 脚本加载到脚本缓存中，但并不执行该脚本。返回该脚本的 SHA1 校验和。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/script-flush.html">SCRIPT FLUSH</a></td>
+<td>清空所有 Lua 脚本缓存。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/script-kill.html">SCRIPT KILL</a></td>
+<td>杀死当前正在执行的 Lua 脚本。通常在脚本运行时间过长或发生错误时使用。</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://redis.com.cn/commands/script-exists.html">SCRIPT EXISTS</a></td>
+<td>检查指定的一个或多个脚本是否已经存在于脚本缓存中。</td>
+</tr>
+<tr>
+<td>SLOWLOG GET</td>
+<td>查看 Redis 的慢日志，显示执行 Lua 脚本的详细信息和耗时。</td>
+</tr>
+<tr>
+<td>SLOWLOG LEN</td>
+<td>查看 Redis 慢日志的长度。</td>
+</tr>
+<tr>
+<td>SLOWLOG RESET</td>
+<td>清空 Redis 慢日志。</td>
+</tr>
+</tbody></table>
+<!--
+信号槽 观察者模式
+肯乃可特  第五个参数
+对象树 
+-->
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://moon2702.github.io">moon2702</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://moon2702.github.io/2024/07/30/Redis%20%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4/">http://moon2702.github.io/2024/07/30/Redis 相关命令/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://moon2702.github.io" target="_blank">MOON</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Redis/">Redis</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2024/07/21/l7A41mHsp9PDS6W.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/07/30/Linux%20%E5%91%BD%E4%BB%A4%20%E6%96%87%E4%BB%B6%E7%9B%B8%E5%85%B3/" title="Linux 命令 文件相关"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Linux 命令 文件相关</div></div></a></div><div class="next-post pull-right"><a href="/2024/07/24/Redis%20%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="Redis 数据结构"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Redis 数据结构</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2024/07/24/Redis%20%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="Redis 数据结构"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-24</div><div class="title">Redis 数据结构</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><script>var config = {
+  tocMaxDepth: 2
+};</script><script src="../../../source/js/main.js"></script><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Redis-%E5%90%AF%E5%8A%A8"><span class="toc-number">1.</span> <span class="toc-text">Redis 启动</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%80%9A%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="toc-number">2.</span> <span class="toc-text">通用命令</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#COMMAND"><span class="toc-number">2.1.</span> <span class="toc-text">COMMAND</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SAVE"><span class="toc-number">2.2.</span> <span class="toc-text">SAVE</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%94%AE%E5%91%BD%E4%BB%A4"><span class="toc-number">3.</span> <span class="toc-text">键命令</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#KEYS"><span class="toc-number">3.1.</span> <span class="toc-text">KEYS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#EXPIRE"><span class="toc-number">3.2.</span> <span class="toc-text">EXPIRE</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TTL"><span class="toc-number">3.3.</span> <span class="toc-text">TTL</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RENAME"><span class="toc-number">3.4.</span> <span class="toc-text">RENAME</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#String"><span class="toc-number">4.</span> <span class="toc-text">String</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#SET"><span class="toc-number">4.1.</span> <span class="toc-text">SET</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GET"><span class="toc-number">4.2.</span> <span class="toc-text">GET</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#INCR"><span class="toc-number">4.3.</span> <span class="toc-text">INCR</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#INCRBYFLOAT"><span class="toc-number">4.4.</span> <span class="toc-text">INCRBYFLOAT</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Hash"><span class="toc-number">5.</span> <span class="toc-text">Hash</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#HSET"><span class="toc-number">5.1.</span> <span class="toc-text">HSET</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HGET"><span class="toc-number">5.2.</span> <span class="toc-text">HGET</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#List"><span class="toc-number">6.</span> <span class="toc-text">List</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#RPUSH"><span class="toc-number">6.1.</span> <span class="toc-text">RPUSH</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LPUSH"><span class="toc-number">6.2.</span> <span class="toc-text">LPUSH</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BLPOP"><span class="toc-number">6.3.</span> <span class="toc-text">BLPOP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LREM"><span class="toc-number">6.4.</span> <span class="toc-text">LREM</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Set"><span class="toc-number">7.</span> <span class="toc-text">Set</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#SADD"><span class="toc-number">7.1.</span> <span class="toc-text">SADD</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SMEMBERS"><span class="toc-number">7.2.</span> <span class="toc-text">SMEMBERS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SINTER"><span class="toc-number">7.3.</span> <span class="toc-text">SINTER</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Zset"><span class="toc-number">8.</span> <span class="toc-text">Zset</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ZCARD"><span class="toc-number">8.1.</span> <span class="toc-text">ZCARD</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ZADD"><span class="toc-number">8.2.</span> <span class="toc-text">ZADD</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ZRANGE"><span class="toc-number">8.3.</span> <span class="toc-text">ZRANGE</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ZREM"><span class="toc-number">8.4.</span> <span class="toc-text">ZREM</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ZINTERSTORE"><span class="toc-number">8.5.</span> <span class="toc-text">ZINTERSTORE</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%91%E5%B8%83%E8%AE%A2%E9%98%85"><span class="toc-number">9.</span> <span class="toc-text">发布订阅</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1"><span class="toc-number">10.</span> <span class="toc-text">事务</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Lua-%E8%84%9A%E6%9C%AC"><span class="toc-number">11.</span> <span class="toc-text">Lua 脚本</span></a></li></ol></div></div></div></div></main><footer id="footer" style="background-image: url('https://s2.loli.net/2024/07/25/mkzJEb7GqutfaF3.png')"><div id="footer-wrap"><div class="copyright">&copy;2024 By moon2702</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div></div></body></html>
